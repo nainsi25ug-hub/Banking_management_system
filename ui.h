@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
-#include "banking.h"
+#include "bank.h"
 
 bool read_line(const char *prompt, char *buffer, size_t size);
 bool read_int(const char *prompt, int *out_value);
