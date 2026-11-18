@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "ui.h"
+#include "transaction.h"
 
 static void clear_input_buffer(void) {
     int c=getchar(); 
@@ -30,7 +31,7 @@ bool read_line(const char *prompt, char *buffer, size_t size)
     if (fgets(buffer, (int)size, stdin) == NULL) 
     {
         buffer[0] = '\0';
-        return false; /* EOF or stream error */
+        return false;
     }
 
     size_t len = strlen(buffer);
@@ -51,7 +52,7 @@ bool read_int(const char *prompt, int *out_value)
     while (true) {
         if (!read_line(prompt, buf, sizeof(buf))) 
         {
-            return false; /* Handle EOF cleanly */
+            return false;
         }
         char *start = buf;
         while (isspace((unsigned char)*start)) 
@@ -199,7 +200,7 @@ void run_account_menu(AccountList *list, Account *acc)
                 double amount = 0.0;
                 if (read_double("Enter deposit amount: ", &amount)) 
                 {
-                    //Module 3: call deposit_funds(acc, amount)
+                    deposit(list, acc->account_number, amount);
                 }
                 break;
             }
@@ -209,7 +210,7 @@ void run_account_menu(AccountList *list, Account *acc)
                 double amount = 0.0;
                 if (read_double("Enter withdrawal amount: ", &amount)) 
                 {
-                    //Module 3): call withdraw_funds(acc, amount)
+                    withdraw(list, acc->account_number, amount);
                 }
                 break;
             }
@@ -221,9 +222,15 @@ void run_account_menu(AccountList *list, Account *acc)
                 if (read_int("Enter destination Account ID: ", &target_id) &&
                     read_double("Enter transfer amount: ", &amount)) 
                 {
-                    //Module 3 & 5: find target account & call transfer_funds(acc, target_acc, amount)
+                    if (transfer(list, acc->account_number, target_id, amount))
+                    {
+                        printf("Transfer successful. New balance: $%.2f\n", acc->balance);
+                    }
+                    else
+                    {
+                        printf("Transfer failed. Check the destination account, amount and funds. No balances were changed.\n");
+                    }
                 }
-                break;
             }
 
             case 5: 
@@ -286,13 +293,25 @@ void run_main_menu(AccountList *list)
                 }
                 break;
             }
+            
             case 3: 
             {
                 int search_id = 0;
                 if (read_int("Enter Account ID to select: ", &search_id)) 
                 {
-                    //Module 5): Account *found = find_account_by_id(list, search_id);
-                    //If found != NULL, call run_account_menu(list, found); 
+                    Node *found = find_account(list, search_id);
+                    if (found == NULL)
+                    {
+                        printf("No account found with ID %d.\n", search_id);
+                    }
+                    else if (found->data.status == ACCOUNT_CLOSED)
+                    {
+                        printf("Account %d is closed.\n", search_id);
+                    }
+                    else
+                    {
+                        run_account_menu(list, &found->data);
+                    }
                 }
                 break;
             }
