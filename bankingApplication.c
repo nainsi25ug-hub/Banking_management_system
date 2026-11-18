@@ -4,10 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include "ui.h"
 
 static void clear_input_buffer(void) {
-    //int c;
-    //while ((c = getchar()) != '\n' && c != EOF) {}
     int c=getchar(); 
     while (c!= '\n' && c != EOF) 
     {
