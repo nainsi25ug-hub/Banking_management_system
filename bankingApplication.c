@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include "ui.h"
 #include "transaction.h"
+#include "linked_list.h"
 
 static void clear_input_buffer(void) {
     int c=getchar(); 
@@ -289,7 +290,7 @@ void run_main_menu(AccountList *list)
                 if (read_line("Enter customer full name: ", name, sizeof(name)) &&
                     read_double("Enter initial deposit: ", &initial_deposit)) 
                 {
-                    //Module 1
+                    create_account(list, name, initial_deposit, &new_id)
                 }
                 break;
             }
@@ -297,6 +298,25 @@ void run_main_menu(AccountList *list)
             case 3: 
             {
                 int search_id = 0;
+                int mode = 0;
+                if (!read_int("1. Select by Account ID\n2. Search by name\nChoose (1-2): ", &mode))
+                {
+                    break;
+                }
+                if (mode == 2)
+                {
+                    char query[50];
+                    if (!read_line("Enter name to search: ", query, sizeof(query)))
+                    {
+                        break;
+                    }
+                    search_accounts_by_name(list, query);
+                }
+                else if (mode != 1)
+                {
+                    printf("Invalid choice.\n");
+                    break;
+                }
                 if (read_int("Enter Account ID to select: ", &search_id)) 
                 {
                     Node *found = find_account(list, search_id);
@@ -317,7 +337,7 @@ void run_main_menu(AccountList *list)
             }
 
             case 4:
-                //Module 5
+                generate_end_of_day_report();
                 break;
 
             case 5:
