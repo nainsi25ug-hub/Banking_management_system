@@ -7,6 +7,7 @@
 #include "ui.h"
 #include "transaction.h"
 #include "linked_list.h"
+#include "module5.h"
 
 static void clear_input_buffer(void) {
     int c=getchar(); 
@@ -201,7 +202,14 @@ void run_account_menu(AccountList *list, Account *acc)
                 double amount = 0.0;
                 if (read_double("Enter deposit amount: ", &amount)) 
                 {
-                    deposit(list, acc->account_number, amount);
+                    if (deposit(list, acc->account_number, amount))
+                    {
+                        printf("Deposit successful. New balance: $%.2f\n", acc->balance);
+                    }
+                    else
+                    {
+                        printf("Deposit failed. Amount must be a positive number.\n");
+                    }
                 }
                 break;
             }
@@ -242,9 +250,13 @@ void run_account_menu(AccountList *list, Account *acc)
                 {
                     if (confirm[0] == 'y' || confirm[0] == 'Y') 
                     {
-                        acc->status = ACCOUNT_CLOSED;
-                        printf("Account %d marked as CLOSED.\n", acc->account_number);
-                        return; 
+                        if (close_account(list, acc->account_number))
+                        {
+                            audit_log_transaction("CLOSE", acc->account_number, 0, 0.0, 1, "Account closed");
+                            printf("Account %d marked as CLOSED.\n", acc->account_number);
+                            return;
+                        }
+                        printf("Unable to close account.\n");
                     }
                 }
                 break;
@@ -290,7 +302,16 @@ void run_main_menu(AccountList *list)
                 if (read_line("Enter customer full name: ", name, sizeof(name)) &&
                     read_double("Enter initial deposit: ", &initial_deposit)) 
                 {
-                    create_account(list, name, initial_deposit, &new_id)
+                    int new_id = 0;
+                    if (create_account(list, name, initial_deposit, &new_id))
+                    {
+                        printf("Account created successfully. Account ID: %d\n", new_id);
+                        audit_log_transaction("OPEN", new_id, 0, initial_deposit, 1, "Account created");
+                    }
+                    else
+                    {
+                        printf("Could not create account. Check the name (not blank) and that the deposit is not negative.\n");
+                    }
                 }
                 break;
             }
