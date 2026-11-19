@@ -23,4 +23,4 @@ typedef struct {
     int total_accounts;
 } AccountList;
 
-#endif /* BANKING_H */
+#endif
